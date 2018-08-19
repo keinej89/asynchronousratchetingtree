@@ -30,7 +30,7 @@ public class UpdateMessage {
     Utils.deserialise(struct, thriftSerialised);
 
     leafNum = struct.getLeafNum();
-    path = new DHPubKey[struct.getPathSize()];
+    path = new DHPubKey[struct.getPath().size()];
     for (int i = 0; i < path.length; i++) {
       path[i] = DHPubKey.pubKey(
         Base64.getDecoder().decode(struct.getPath().get(i))

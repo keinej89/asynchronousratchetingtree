@@ -32,7 +32,7 @@ public class SetupMessage {
     SetupMessageStruct struct = new SetupMessageStruct();
     Utils.deserialise(struct, thriftSerialised);
 
-    identities = new DHPubKey[struct.getIdentitiesSize()];
+    identities = new DHPubKey[struct.getIdentities().size()];
     for (int i = 0; i < identities.length; i++) {
       identities[i] = DHPubKey.pubKey(
         Base64.getDecoder().decode(struct.getIdentities().get(i))
