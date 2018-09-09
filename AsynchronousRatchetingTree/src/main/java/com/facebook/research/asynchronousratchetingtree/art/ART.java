@@ -17,6 +17,7 @@ import com.facebook.research.asynchronousratchetingtree.crypto.Crypto;
 import com.facebook.research.asynchronousratchetingtree.crypto.DHKeyPair;
 import com.facebook.research.asynchronousratchetingtree.crypto.DHPubKey;
 
+import java.math.BigInteger;
 import java.util.*;
 
 public class ART {
@@ -43,9 +44,9 @@ public class ART {
     SecretNode tree = createTree(leaves);
     state.setIdentities(peers);
     state.setTree(tree);
-
+    
     SetupMessage sm = new SetupMessage(
-      peers,
+		peers,
       preKeys,
       keyExchangeKeyPair.getPubKey(),
       tree
@@ -63,13 +64,31 @@ public class ART {
     if (!verified) {
       Utils.except("Signature verification failed on the setup message.");
     }
+    
+    DHPubKey[] idPubkeys = message.getIdentities();
+    DHPubKey myIdPubKey = idPubkeys[leafNum];
+    
+    DHPubKey myPrePubKey = message.getEphemeralKeys().get(leafNum);    
+    
+    // Utils.printTree(state.getTree());
+    Utils.print("My ID pubkey from tree #%d: %s",leafNum, hexDump(myIdPubKey.getPubKeyBytes())); 
+    Utils.print("My real pubkey: %s",hexDump(state.getIdentityKeyPair().getPubKeyBytes()));
 
-    if (!Arrays.equals(state.getPreKeyFor(0).getPubKey().getPubKeyBytes(), message.getEphemeralKeys().get(leafNum).getPubKeyBytes())) {
-      Utils.except("Used the wrong ephemeral key.");
+    if (!Arrays.equals(myIdPubKey.getPubKeyBytes(), state.getIdentityKeyPair().getPubKeyBytes())) {
+    	Utils.except("Identity pubkey mismatch for my leafnum!");
     }
+    
+    if (!Arrays.equals(myPrePubKey.getPubKeyBytes(), state.getMyPreKeyPair().getPubKeyBytes()) ) {
+    	Utils.except("Message pre-key does not match my prekey!");
+    }
+    
+    /*if (!Arrays.equals(state.getPreKeyFor(leafNum).getPubKeyBytes(), message.getEphemeralKeys().get(leafNum).getPubKeyBytes())) {
+        Utils.except("Used the wrong ephemeral key.");
+  	}*/
+    
     SecretLeafNode leaf = new SecretLeafNode(
       DHKeyPair.fromBytes(
-        Crypto.keyExchangeReceive(state.getIdentityKeyPair(), message.getIdentities()[0], state.getPreKeyFor(0), message.getKeyExchangeKey()),
+        Crypto.keyExchangeReceive(state.getIdentityKeyPair(), message.getIdentities()[0], state.getMyPreKeyPair(), message.getKeyExchangeKey()),
         false
       )
     );
@@ -84,6 +103,7 @@ public class ART {
       message.getIdentities()
     );
     deriveStageKey(state);
+    
   }
 
   public static AuthenticatedMessage updateKey(ARTState state) {
@@ -218,5 +238,11 @@ public class ART {
 
   private static int leftTreeSize(int numLeaves) {
     return (int)Math.pow(2, Math.ceil(Math.log(numLeaves) / Math.log(2)) - 1);
+  }
+  
+  
+  public static String hexDump(byte[] bytes) {
+	  BigInteger bi = new BigInteger(bytes);
+	  return bi.toString(16);
   }
 }

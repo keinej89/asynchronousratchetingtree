@@ -8,18 +8,18 @@
 
 package com.facebook.research.asynchronousratchetingtree;
 
-import com.facebook.research.asynchronousratchetingtree.art.message.thrift.NodeStruct;
-import com.facebook.research.asynchronousratchetingtree.art.tree.Node;
-import org.apache.thrift.TBase;
-import org.apache.thrift.TDeserializer;
-import org.apache.thrift.TException;
-import org.apache.thrift.TSerializer;
-import org.apache.thrift.protocol.TCompactProtocol;
-import org.apache.thrift.protocol.TSimpleJSONProtocol;
-
-import javax.xml.bind.DatatypeConverter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import javax.xml.bind.DatatypeConverter;
+
+import com.facebook.research.asynchronousratchetingtree.art.message.thrift.NodeStruct;
+import com.facebook.research.asynchronousratchetingtree.art.tree.Node;
+import com.facebook.thrift.TBase;
+import com.facebook.thrift.TDeserializer;
+import com.facebook.thrift.TException;
+import com.facebook.thrift.TSerializer;
+import com.facebook.thrift.protocol.TCompactProtocol;
 
 final public class Utils {
   public static void print(String a, Object... args) {
@@ -27,13 +27,14 @@ final public class Utils {
     System.out.printf("[" + f.format(new Date()) + "] " + a + "\n", args);
   }
 
+  @Deprecated
   public static void printHex(byte[] a) {
     print(DatatypeConverter.printHexBinary(a));
   }
 
   public static void printTree(Node tree) {
     NodeStruct struct = Node.toThrift(tree);
-    TSerializer serialiser = new TSerializer(new TSimpleJSONProtocol.Factory());
+    TSerializer serialiser = new TSerializer();
     try {
       Utils.print(new String(serialiser.serialize(hexifyNodeStruct(struct))));
     } catch (TException e) {

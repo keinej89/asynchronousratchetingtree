@@ -165,14 +165,14 @@ public class Crypto {
   public static byte[] keyExchangeReceive(
     DHKeyPair selfIdentity,
     DHPubKey remoteIdentity,
-    DHKeyPair ephemeralKey,
+    DHKeyPair myEphemeralKey,
     DHPubKey keyExchangeKey
   ) {
     MessageDigest md = Crypto.startSHA256();
     md.update(selfIdentity.exchange(remoteIdentity));
-    md.update(ephemeralKey.exchange(remoteIdentity));
+    md.update(myEphemeralKey.exchange(remoteIdentity));
     md.update(selfIdentity.exchange(keyExchangeKey));
-    md.update(ephemeralKey.exchange(keyExchangeKey));
+    md.update(myEphemeralKey.exchange(keyExchangeKey));
     return md.digest();
   }
 }

@@ -10,9 +10,9 @@ package com.facebook.research.asynchronousratchetingtree.art;
 
 import com.facebook.research.asynchronousratchetingtree.GroupMessagingState;
 import com.facebook.research.asynchronousratchetingtree.Utils;
+import com.facebook.research.asynchronousratchetingtree.art.tree.SecretNode;
 import com.facebook.research.asynchronousratchetingtree.art.tree.SecretParentNode;
 import com.facebook.research.asynchronousratchetingtree.crypto.DHPubKey;
-import com.facebook.research.asynchronousratchetingtree.art.tree.SecretNode;
 
 public class ARTState extends GroupMessagingState {
   private SecretParentNode tree;

@@ -10,10 +10,17 @@ package com.facebook.research.asynchronousratchetingtree.art.message;
 
 import com.facebook.research.asynchronousratchetingtree.art.message.thrift.SetupMessageStruct;
 import com.facebook.research.asynchronousratchetingtree.art.tree.Node;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.facebook.research.asynchronousratchetingtree.Utils;
 import com.facebook.research.asynchronousratchetingtree.crypto.DHPubKey;
 
-import java.util.*;
 
 public class SetupMessage {
   private DHPubKey[] identities;
@@ -34,19 +41,29 @@ public class SetupMessage {
 
     identities = new DHPubKey[struct.getIdentities().size()];
     for (int i = 0; i < identities.length; i++) {
-      identities[i] = DHPubKey.pubKey(
-        Base64.getDecoder().decode(struct.getIdentities().get(i))
-      );
+      try {
+		identities[i] = DHPubKey.pubKey(
+		    Base64.decode(struct.getIdentities().get(i))
+		  );
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     }
 
     ephemeralKeys = new HashMap<>();
     for (int i = 1; i < identities.length; i++) {
-      ephemeralKeys.put(
-        i,
-        DHPubKey.pubKey(
-          Base64.getDecoder().decode(struct.getEphemeralKeys().get(i))
-        )
-      );
+      try {
+		ephemeralKeys.put(
+		    i,
+		    DHPubKey.pubKey(
+		      Base64.decode(struct.getEphemeralKeys().get(i))
+		    )
+		  );
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
     }
 
     keyExchangeKey = DHPubKey.pubKey(struct.getKeyExchangeKey());
@@ -74,11 +91,11 @@ public class SetupMessage {
     Map<Integer, String> ephemeralKeys = new HashMap<>();
 
     for (int i = 0; i < this.identities.length; i++) {
-      identities.add(Base64.getEncoder().encodeToString(this.identities[i].getPubKeyBytes()));
+      identities.add(Base64.encodeBytes(this.identities[i].getPubKeyBytes()));
     }
 
     for (int i = 1; i < this.identities.length; i++) {
-      ephemeralKeys.put(i, Base64.getEncoder().encodeToString(this.ephemeralKeys.get(i).getPubKeyBytes()));
+      ephemeralKeys.put(i, Base64.encodeBytes(this.ephemeralKeys.get(i).getPubKeyBytes()));
     }
 
     SetupMessageStruct struct = new SetupMessageStruct();

@@ -1,2 +1,4 @@
 AsynchronousRatchetingTree/target
 .idea
+/bin/
+/target/

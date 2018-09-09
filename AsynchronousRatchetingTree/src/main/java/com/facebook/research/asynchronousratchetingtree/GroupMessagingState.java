@@ -9,6 +9,7 @@
 package com.facebook.research.asynchronousratchetingtree;
 
 import com.facebook.research.asynchronousratchetingtree.crypto.DHKeyPair;
+import com.facebook.research.asynchronousratchetingtree.crypto.DHPubKey;
 import com.facebook.research.asynchronousratchetingtree.crypto.SignedDHPubKey;
 
 import java.util.HashMap;
@@ -17,14 +18,16 @@ import java.util.Map;
 abstract public class GroupMessagingState {
   private int peerNum;
   private int peerCount;
-  private DHKeyPair identityKeyPair;
-  private Map<Integer, DHKeyPair> preKeys = new HashMap<>();
+  
+  protected DHKeyPair identityKeyPair;
+  private DHKeyPair myPreKeyPair;
+  
+  private Map<Integer, DHPubKey> preKeys = new HashMap<>();
   private Map<Integer, SignedDHPubKey> signedPreKeys = new HashMap<>();
 
   public GroupMessagingState(int peerNum, int peerCount) {
     this.peerNum = peerNum;
     this.peerCount = peerCount;
-    identityKeyPair = DHKeyPair.generate(true);
   }
 
   final public int getPeerNum() {
@@ -39,21 +42,36 @@ abstract public class GroupMessagingState {
     return identityKeyPair;
   }
 
-  final public DHKeyPair getPreKeyFor(int peerNum) {
+  final public DHPubKey getPreKeyFor(int peerNum) {
     if (!preKeys.containsKey(peerNum)) {
-      preKeys.put(peerNum, DHKeyPair.generate(false));
+      throw new IllegalStateException("no pre key for peer #"+peerNum);
     }
     return preKeys.get(peerNum);
   }
-
-  final public SignedDHPubKey getSignedDHPreKeyFor(int peerNum) {
-    if (!signedPreKeys.containsKey(peerNum)) {
-      byte[] pkBytes = getPreKeyFor(peerNum).getPubKeyBytes();
-      byte[] signature = getIdentityKeyPair().sign(pkBytes);
-      signedPreKeys.put(peerNum, new SignedDHPubKey(pkBytes, signature));
-    }
-    return signedPreKeys.get(peerNum);
+  
+  final public void setPreKeyFor(int peerNum, DHPubKey preKey) {
+	  if ( peerNum == this.peerNum) {
+		  throw new IllegalArgumentException("hands off my preKey!");
+	  }
+	  preKeys.put(peerNum, preKey);  
   }
-
+  
+  final public void setMyPreKeyPair(DHKeyPair myPreKeyPair) {
+	  this.myPreKeyPair = myPreKeyPair;
+	  preKeys.put(0, myPreKeyPair);
+  }
+  
+  final public SignedDHPubKey getSignedDHPreKeyFor(int peerNum) {
+	  throw new IllegalArgumentException("does not work this way!");
+  }
+  
+  public DHKeyPair getMyPreKeyPair() {
+	return myPreKeyPair;
+  }
+  
+  public void setIdentityKeyPair(DHKeyPair idKeyPair) {
+	  this.identityKeyPair = idKeyPair;
+  }
+   
   abstract public byte[] getKeyWithPeer(int n);
 }
